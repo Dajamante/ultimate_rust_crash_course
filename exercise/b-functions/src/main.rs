@@ -5,14 +5,17 @@ fn main() {
     let width = 4;
     let height = 7;
     let depth = 10;
+    let area;
+    let volume;
     // 1. Try running this code with `cargo run` and take a look at the error.
     //
     // See if you can fix the error. It is right around here, somewhere.  If you succeed, then
     // doing `cargo run` should succeed and print something out.
     {
-        let area = area_of(width, height);
+        area = area_of(width, height);
+        volume = volume_of(width, height, depth)
     }
-    println!("Area is {}", area);
+    println!("Area is {}, Volume is {}", area, volume);
 
     // 2. The area that was calculated is not correct! Go fix the area_of() function below, then run
     //    the code again and make sure it worked (you should get an area of 28).
@@ -27,12 +30,16 @@ fn main() {
     //
     //println!("Volume is {}", volume(width, height, depth));
 }
+fn volume_of(x:i32, y:i32, z:i32) ->i32{
+    x*y*z
+
+}
 
 fn area_of(x: i32, y: i32) -> i32 {
     // 2a. Fix this function to correctly compute the area of a rectangle given
     // dimensions x and y by multiplying x and y and returning the result.
     //
-    return 0;
+    x*y
     // Challenge: The previous line is not idiomatic (not recommended best practice).
     //            Run `cargo clippy`, figure out what's wrong, and fix it.  Once it is fixed,
     //            `cargo clippy` won't return areas, and `cargo run` will still produce the same
