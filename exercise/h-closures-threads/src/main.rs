@@ -16,8 +16,8 @@ fn expensive_sum(v: Vec<i32>) -> i32 {
     // either need to dereference the argument once in the parameter list like this: `|&x|` or you
     // will need to dereference it each time you use it in the expression like this: `*x`
     v.iter()
-        // .filter() goes here
-        // .map() goes here
+        .filter(|&x| x%2==0)
+        .map(|&x| x*x) // why does map(|&x|{x*x}) is not working
         .sum()
 }
 
@@ -31,8 +31,9 @@ fn main() {
     // 2. Spawn a child thread and have it call `expensive_sum(my_vector)`.  Store the returned
     // join handle in a variable called `handle`. Once you've done this you should be able to run
     // the code and see the Child thread output in the middle of the main thread's letters
-    //
-    //let handle = ...
+
+    // how is that possible without move?
+    let handle = thread::spawn(|| expensive_sum(my_vector));
 
     // While the child thread is running, the main thread will also do some work
     for letter in vec!["a", "b", "c", "d", "e", "f"] {
@@ -45,8 +46,8 @@ fn main() {
     // to exit with a `Result<i32, Err>`.  Get the i32 out of the result and store it in a `sum`
     // variable.  Uncomment the println.  If you did 1a and 1b correctly, the sum should be 20.
     //
-    //let sum =
-    //println!("The child thread's expensive sum is {}", sum);
+    let sum = handle.join().unwrap();
+    println!("The child thread's expensive sum is {}", sum);
 
     // Time for some fun with threads and channels!  Though there is a primitive type of channel
     // in the std::sync::mpsc module, I recommend always using channels from the crossbeam crate,
@@ -56,25 +57,25 @@ fn main() {
     // flow of execution works.  Once you understand it, alter the values passed to the `pause_ms()`
     // calls so that both the "Thread B" outputs occur before the "Thread A" outputs.
 
-    /*
+
     let (tx, rx) = channel::unbounded();
     // Cloning a channel makes another variable connected to that end of the channel so that you can
     // send it to another thread.
     let tx2 = tx.clone();
 
     let handle_a = thread::spawn(move || {
-        pause_ms(0);
+        pause_ms(400);
         tx2.send("Thread A: 1").unwrap();
-        pause_ms(200);
+        pause_ms(400);
         tx2.send("Thread A: 2").unwrap();
     });
 
     pause_ms(100); // Make sure Thread A has time to get going before we spawn Thread B
 
     let handle_b = thread::spawn(move || {
-        pause_ms(0);
+        pause_ms(1);
         tx.send("Thread B: 1").unwrap();
-        pause_ms(200);
+        pause_ms(1);
         tx.send("Thread B: 2").unwrap();
     });
 
@@ -89,12 +90,40 @@ fn main() {
     // Join the child threads for good hygiene.
     handle_a.join().unwrap();
     handle_b.join().unwrap();
-    */
+
 
     // Challenge: Make two child threads and give them each a receiving end to a channel.  From the
     // main thread loop through several values and print each out and then send it to the channel.
     // On the child threads print out the values you receive. Close the sending side in the main
     // thread by calling `drop(tx)` (assuming you named your sender channel variable `tx`).  Join
     // the child threads.
-    println!("Main thread: Exiting.")
+    println!("Main thread: Exiting.");
+
+    let (sendor, receivor) = channel::unbounded();
+    let receivor2 = receivor.clone();
+
+    //receiving end has been moved inside the thread, the thread owns it
+    let handle_c = thread::spawn(move|| {
+        println!("I am some number from handle_c : {}", receivor.recv().unwrap());
+    });
+
+    let handle_d = thread::spawn(move|| {
+        println!("I am some number from handle_d : {}", receivor2.recv().unwrap());
+    });
+
+
+    for numer in 8..12{
+        //why must I unwrap it?
+        // = note: this `Result` may be an `Err` variant, which should be handled
+        println!("I am at {}",numer);
+        pause_ms(200);
+        sendor.send(numer).unwrap();
+        //thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: "SendError(..)"', src/main.rs:120:9
+
+    };
+
+
+    handle_c.join().unwrap();
+    handle_d.join().unwrap();
+    drop(sendor);
 }
