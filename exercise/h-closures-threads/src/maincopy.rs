@@ -33,7 +33,7 @@ fn main() {
     // the code and see the Child thread output in the middle of the main thread's letters
 
     // how is that possible without move?
-    let handle = thread::spawn(|| expensive_sum(my_vector));
+    let handle = thread::spawn(move|| expensive_sum(my_vector));
 
     // While the child thread is running, the main thread will also do some work
     for letter in vec!["a", "b", "c", "d", "e", "f"] {
@@ -104,30 +104,32 @@ fn main() {
 
     //receiving end has been moved inside the thread, the thread owns it
     let handle_c = thread::spawn(move|| {
-        for m in receivor{
-            println!("I am some number from handle_c : {}", m);
+        let num1 = receivor.recv().unwrap();
+        if let Some(ref num1) = num1 {
+            println!("Printing from handle_c: {}", num1);
         }
     });
 
     let handle_d = thread::spawn(move|| {
-        for m in receivor2{
-            println!("I am some number from handle_d : {}", m);
+        let num2 = receivor.recv().unwrap();
+        if let Some(ref num2) = num2 {
+            println!("Printing from handle_d :{}", num2);
         }
     });
 
 
-    for numer in 1..10{
+    for numer in 8..12{
         //why must I unwrap it?
         // = note: this `Result` may be an `Err` variant, which should be handled
         println!("I am at {}",numer);
         pause_ms(200);
-        sendor.send(numer);
+        sendor.send(Some(numer)).unwrap();
         //thread 'main' panicked at 'called `Result::unwrap()` on an `Err` value: "SendError(..)"', src/main.rs:120:9
 
     };
 
-    drop(sendor);
 
     handle_c.join().unwrap();
     handle_d.join().unwrap();
+    drop(sendor);
 }
