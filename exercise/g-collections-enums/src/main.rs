@@ -8,10 +8,10 @@ enum Shot {
     Miss,
 }
 impl Shot {
-    fn points(&self) -> i32 {
-        match &self {
+    fn points(self) -> i32 {
+        match self {
             Shot::Bullseye => 5,
-            Shot::Hit(value) if value < &3.0 => 2,
+            Shot::Hit(value) if value < 3.0 => 2,
             Shot::Hit(value) => 1,
             Shot::Miss => 0,
         }
@@ -42,7 +42,7 @@ fn main() {
 
     let mut total = 0;
     // 3. Finally, loop through each shot in shots and add its points to total
-    for shot in &shots{
+    for shot in shots{
         // if let Shot::Hit(value) = i {
             total += shot.points();
         //}
