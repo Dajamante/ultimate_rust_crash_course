@@ -46,7 +46,7 @@ impl Invaders {
             if self.direction == -1 {
                 let min_x = self.army.iter().map(|invader| invader.x).min().unwrap_or(0);
                 if min_x == 0 {
-                    self.direction == 1;
+                    self.direction = 1;
                     downwards = true;
                 }
             } else {
@@ -75,7 +75,7 @@ impl Invaders {
         self.army.is_empty()
     }
     pub fn reached_bottom(&self) -> bool {
-        self.army.iter().map(|invader| invader.y).max().unwrap_or(0) >= NUM_COLS - 1
+        self.army.iter().map(|invader| invader.y).max().unwrap_or(0) >= NUM_ROWS - 1
     }
     pub fn kill_invader_at(&mut self, x: usize, y: usize) -> bool {
         if let Some(idx) = self
