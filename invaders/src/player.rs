@@ -3,7 +3,9 @@ use crate::frame::Frame;
 use crate::invaders::Invaders;
 use crate::shot::Shot;
 use crate::{NUM_COLS, NUM_ROWS};
+use std::thread;
 use std::time::Duration;
+
 pub struct Player {
     x: usize,
     y: usize,
@@ -26,6 +28,17 @@ impl Player {
     pub fn move_right(&mut self) {
         if self.x < NUM_COLS - 1 {
             self.x += 1;
+        }
+    }
+    pub fn move_up(&mut self) {
+        if self.y > 0 {
+            self.y -= 1;
+        }
+    }
+
+    pub fn move_down(&mut self) {
+        if self.y < NUM_ROWS - 1 {
+            self.y += 1;
         }
     }
     pub fn shoot(&mut self) -> bool {
@@ -53,6 +66,14 @@ impl Player {
             }
         }
         hit_something
+    }
+
+    pub fn dectect_contact(&mut self, invaders: &mut Invaders) -> bool {
+        let mut touched_something: bool = false;
+        if invaders.touch_invader(self.x, self.y) {
+            touched_something = true;
+        }
+        touched_something
     }
 }
 

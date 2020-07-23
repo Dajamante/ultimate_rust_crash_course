@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
     audio.add("explode", "explode.wav");
     audio.add("lose", "lose.wav");
+    audio.add("ouch", "ouch.wav");
     audio.add("move", "move.wav");
     audio.add("pew", "pew.wav");
     audio.add("startup", "startup.wav");
@@ -43,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 Ok(x) => x,
                 Err(_) => break,
             };
-            render(&mut stdout, &last_frame, &curr_frame, true);
+            render(&mut stdout, &last_frame, &curr_frame, false);
             last_frame = curr_frame;
         }
     });
@@ -60,6 +61,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         while event::poll(Duration::default())? {
             if let Event::Key(key_event) = event::read()? {
                 match key_event.code {
+                    KeyCode::Up => player.move_up(),
+                    KeyCode::Down => player.move_down(),
                     KeyCode::Left => player.move_left(),
                     KeyCode::Right => player.move_right(),
                     KeyCode::Char(' ') | KeyCode::Enter => {
@@ -84,6 +87,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         if player.detect_hits(&mut invaders) {
             audio.play("explode");
         }
+        if player.dectect_contact(&mut invaders) {
+            audio.play("ouch");
+        }
         //render section
         //player.draw(&mut curr_frame);
         //invaders.draw(&mut curr_frame);
@@ -100,7 +106,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             break 'gameloop;
         }
         if invaders.reached_bottom() {
-            audio.play("loose");
+            audio.play("lose");
             break 'gameloop;
         }
     }

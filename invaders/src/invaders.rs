@@ -7,6 +7,7 @@ use std::time::Duration;
 pub struct Invader {
     pub x: usize,
     pub y: usize,
+    pub rubbed: bool,
 }
 
 pub struct Invaders {
@@ -27,7 +28,11 @@ impl Invaders {
                     && (x % 2 == 0)
                     && (y % 2 == 0)
                 {
-                    army.push(Invader { x, y });
+                    army.push(Invader {
+                        x,
+                        y,
+                        rubbed: (false),
+                    });
                 }
             }
         }
@@ -82,6 +87,19 @@ impl Invaders {
             .army
             .iter()
             .position(|invader| (invader.x == x) && (invader.y == y))
+        {
+            self.army.remove(idx);
+            true
+        } else {
+            false
+        }
+    }
+    //return if the player has a contact with an invader
+    pub fn touch_invader(&mut self, x: usize, y: usize) -> bool {
+        if let Some(idx) = self
+            .army
+            .iter()
+            .position(|invader| (invader.x == x && invader.y == y))
         {
             self.army.remove(idx);
             true
