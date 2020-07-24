@@ -96,16 +96,15 @@ impl Invaders {
     }
     //return if the player has a contact with an invader
     pub fn touch_invader(&mut self, x: usize, y: usize) -> bool {
-        if let Some(idx) = self
-            .army
-            .iter()
-            .position(|invader| (invader.x == x && invader.y == y))
-        {
-            self.army.remove(idx);
-            true
-        } else {
-            false
+        let mut touched_alien = false;
+        for invader in self.army.iter_mut() {
+            if invader.x == x && invader.y == y && !invader.rubbed {
+                touched_alien = true;
+                invader.rubbed = true;
+            } else {
+            }
         }
+        touched_alien
     }
 }
 
