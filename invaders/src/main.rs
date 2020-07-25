@@ -13,6 +13,7 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+use std::io::Write;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
@@ -32,6 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     stdout.execute(EnterAlternateScreen)?;
     stdout.execute(Hide)?;
 
+    thread::sleep(Duration::from_millis(100));
     // Render loop in separate thread
 
     let (render_tx, render_rx) = mpsc::channel();
