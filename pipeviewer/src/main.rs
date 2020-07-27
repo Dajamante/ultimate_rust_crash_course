@@ -1,7 +1,8 @@
 use pipeviewer::{args::Args, read, stats, write};
 //accessing functions through their modules
 use std::io::Result;
-use std::sync::{Arc, Mutex};
+use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
 //cargo fmt
@@ -14,16 +15,16 @@ fn main() -> Result<()> {
         silent,
     } = args;
 
-    //mutex guarding boolean
-    let quit = Arc::new(Mutex::new(false));
+    //multiple producer, single consummer!
+    let (stats_tx, stats_rx) = mpsc::channel();
+    let (write_tx, write_rx) = mpsc::channel();
+    let (_read_tx, _read_rx): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
 
-    // three clones of quit. To coordinate clean up and closing.
-    let (quit1, quit2, quit3) = (quit.clone(), quit.clone(), quit.clone());
-    // command D copies last line
-
-    let read_handle = thread::spawn(move || read::read_loop(&infile, quit1));
-    let stats_handle = thread::spawn(move || stats::stats_loop(silent, quit2));
-    let write_handle = thread::spawn(move || write::write_loop(&outfile, quit3));
+    // toggle hint settings OPTION H
+    let read_handle = thread::spawn(move || read::read_loop(&infile, stats_tx));
+    let stats_handle = thread::spawn(move || stats::stats_loop(silent, stats_rx, write_tx));
+    // write thread has it's own receiver
+    let write_handle = thread::spawn(move || write::write_loop(&outfile, write_rx));
 
     //join threads and crash if any thread has crashed
     //`.join()`returns a thread::Result::<io::Result<()>>
