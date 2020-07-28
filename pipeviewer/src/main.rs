@@ -1,12 +1,19 @@
+use crossbeam::channel::{bounded, unbounded};
 use pipeviewer::{args::Args, read, stats, write};
 //accessing functions through their modules
 use std::io::Result;
-use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 
-//cargo fmt
+// cargo fmt
+// the channels are unbounded?? bounded??
+// some back pressure to slow down the reads???
 
+
+//yes | cargo run -- | head -n 100000000 > /dev/null
+//add that
+// check video 2.1 and copy command line terminal
+//dd if=/dev/urandom bs=1024 count=128 of=myfile
+//cat myfile | target/debug/pipeviewer > myfile2
 fn main() -> Result<()> {
     let args = Args::parse();
     let Args {
@@ -16,13 +23,12 @@ fn main() -> Result<()> {
     } = args;
 
     //multiple producer, single consummer!
-    let (stats_tx, stats_rx) = mpsc::channel();
-    let (write_tx, write_rx) = mpsc::channel();
-    let (_read_tx, _read_rx): (Sender<Vec<u8>>, Receiver<Vec<u8>>) = mpsc::channel();
+    let (stats_tx, stats_rx) = unbounded();
+    let (write_tx, write_rx) = bounded(1024); //is it number of attempts, or number of bytes?
 
     // toggle hint settings OPTION H
-    let read_handle = thread::spawn(move || read::read_loop(&infile, stats_tx));
-    let stats_handle = thread::spawn(move || stats::stats_loop(silent, stats_rx, write_tx));
+    let read_handle = thread::spawn(move || read::read_loop(&infile, stats_tx, write_tx));
+    let stats_handle = thread::spawn(move || stats::stats_loop(silent, stats_rx));
     // write thread has it's own receiver
     let write_handle = thread::spawn(move || write::write_loop(&outfile, write_rx));
 
