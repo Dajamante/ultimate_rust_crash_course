@@ -8,7 +8,6 @@ use std::thread;
 // the channels are unbounded?? bounded??
 // some back pressure to slow down the reads???
 
-
 //yes | cargo run -- | head -n 100000000 > /dev/null
 //add that
 // check video 2.1 and copy command line terminal
